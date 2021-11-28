@@ -1,6 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+void right()
+{
+    // turn 90 degree clockwise, and then one step forward
+}
+
+void forward()
+{
+    // one step forward
+}
+
+void backward()
+{
+    // turn 180 degree, and then move one step forward
+}
+
+void left()
+{
+    // turn 90 degree left, and then move one step forward
+}
+
 void backtrack(vector <int> &path, int curri, int currj,int o)
 {
     path.pop_back();
