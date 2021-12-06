@@ -8,7 +8,7 @@ from geometry_msgs.msg import Quaternion
 import math
 
 dist_l,dist_r,dist_c = 0,0,0
-x,y,i,j = 0,0,0,0:
+x,y,i,j = 0,0,0,0
 orientation = -1
 dirn = ""
 visited = [[0 for i in range(16)] for j in range(16)]
@@ -271,7 +271,7 @@ def decideDirection():
         
     elif(j>=8 and i>=8): #// priority left-top-down-right  // 4th quadrant 
     
-        if(orientation==0)
+        if(orientation==0):
         
             if(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"            
@@ -331,7 +331,7 @@ def clbk_laser(msg):
     ]
 
     #rospy.loginfo(regions)
-    #print("l: {} \t c: {} \t r: {}".format(regions[4], regions[2], regions[0]))
+    #print("l:  \t c:  \t r: ".format(regions[4], regions[2], regions[0]))
     
     dist_l,dist_c,dist_r = regions[4],regions[2],regions[0]
 
@@ -430,6 +430,110 @@ def main():
             break
 
         decideDirection()
+    
+    idx = len(path)-1
+
+    while(idx>=0):
+
+        previ,prevj = path[idx]/16, path[idx]%16
+
+        if(previ == i+1):
+        
+            if(orientation==0): 
+                forward()
+            elif(orientation==1): 
+                backward()
+            elif(orientation==2): 
+                right()
+            elif(orientation==3): 
+                left()
+        
+        elif(previ == i-1):
+        
+            if(orientation==1): 
+                forward()
+            elif(orientation==0): 
+                backward()
+            elif(orientation==2): 
+                left()
+            elif(orientation==3): 
+                right()
+        
+        elif(prevj == j+1):
+        
+            if(orientation==2): 
+                forward()
+            elif(orientation==3): 
+                backward()
+            elif(orientation==1): 
+                right()
+            elif(orientation==0): 
+                left()
+        
+        elif(prevj == j-1):
+        
+            if(orientation==3): 
+                forward()
+            elif(orientation==2): 
+                backward()
+            elif(orientation==0): 
+                right()
+            elif(orientation==1): 
+                left()
+
+        idx = idx-1
+
+    idx = 0
+
+    while(idx<len(path)):
+
+        previ,prevj = path[idx]/16, path[idx]%16
+
+        if(previ == i+1):
+        
+            if(orientation==0): 
+                forward()
+            elif(orientation==1): 
+                backward()
+            elif(orientation==2): 
+                right()
+            elif(orientation==3): 
+                left()
+        
+        elif(previ == i-1):
+        
+            if(orientation==1): 
+                forward()
+            elif(orientation==0): 
+                backward()
+            elif(orientation==2): 
+                left()
+            elif(orientation==3): 
+                right()
+        
+        elif(prevj == j+1):
+        
+            if(orientation==2): 
+                forward()
+            elif(orientation==3): 
+                backward()
+            elif(orientation==1): 
+                right()
+            elif(orientation==0): 
+                left()
+        
+        elif(prevj == j-1):
+        
+            if(orientation==3): 
+                forward()
+            elif(orientation==2): 
+                backward()
+            elif(orientation==0): 
+                right()
+            elif(orientation==1): 
+                left()
+
+        idx = idx+1
 
 if __name__ == '__main__':
     main()
