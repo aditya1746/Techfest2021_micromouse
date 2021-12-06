@@ -333,7 +333,7 @@ def clbk_laser(msg):
     #rospy.loginfo(regions)
     #print("l: {} \t c: {} \t r: {}".format(regions[4], regions[2], regions[0]))
     
-    dist_l = regions[4],dist_c = regions[2],dist_r = regions[0]
+    dist_l,dist_c,dist_r = regions[4],regions[2],regions[0]
 
 def clbk_odo(msg):
 
@@ -341,8 +341,15 @@ def clbk_odo(msg):
 
     x = msg.x, y = msg.y
 
-    #i = 
-    #j = 
+    if(x>0):
+        i = 7 + ((x/0.85)+1)/2
+    else:
+        i = 7 - ((abs(x)/0.85)-1)/2
+
+    if(y>0):
+        j = 7 - ((y/0.85)-1)/2
+    else:
+        j = 7 + ((abs(y)/0.85)+1)/2
 
 def setOrientation():
 
