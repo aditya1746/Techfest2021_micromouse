@@ -13,8 +13,11 @@ orientation = -1
 dirn = ""
 visited = [[0 for i in range(16)] for j in range(16)]
 path = []
+pub = 0
 
 def forward():
+
+    global pub
 
     v = Twist()
     v.linear.x, v.linear.y, v.linear.z = 1,0,0
@@ -79,7 +82,7 @@ def backtrack():
     global path
     path.pop()
 
-    previ = path[path.size()-1]/16, prevj = path[path.size()-1]%16
+    previ = path[-1]/16, prevj = path[-1]%16
 
     if(previ == i+1):
 
@@ -139,7 +142,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"
             else: 
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==1):
         
@@ -150,7 +153,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==2):
         
@@ -161,7 +164,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"            
             else: 
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==3):
         
@@ -172,7 +175,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"            
             else: 
-                backtrack(path,i,j,o)
+                backtrack()
         
     elif(j>=8 and i<=7): #// priority left-down-top-right  // 1st quadrant
 
@@ -185,7 +188,7 @@ def decideDirection():
             elif(dist_l>0.15 and visited[i][j+1]==0): 
                 dirn = "left"
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==1):
         
@@ -196,7 +199,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j+1]==0): 
                 dirn = "right"
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==2):
         
@@ -207,7 +210,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j+1]==0): 
                 dirn = "front"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==3):
         
@@ -218,7 +221,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
     elif(j<=7 and i>=8): #// priority right-top-down-left  // 3rd quadrant
     
@@ -231,7 +234,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j-1]==0): 
                 dirn = "right"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==1):
         
@@ -242,7 +245,7 @@ def decideDirection():
             elif(dist_l>0.15 and visited[i][j-1]==0): 
                 dirn = "left"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==2):
         
@@ -253,7 +256,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i+1][j]==0): 
                 dirn = "right"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==3):
         
@@ -264,7 +267,7 @@ def decideDirection():
             elif(dist_c>0.15 and visited[i][j+1]==0): 
                 dirn = "front"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
     elif(j>=8 and i>=8): #// priority left-top-down-right  // 4th quadrant 
     
@@ -276,7 +279,8 @@ def decideDirection():
                 dirn = "front"
             elif(dist_l>0.15 and visited[i][j+1]==0): 
                 dirn = "left"            
-            elbacktrack(path,i,j,o)
+            else:
+                backtrack()
         
         elif(orientation==1):
         
@@ -287,7 +291,7 @@ def decideDirection():
             elif(dist_r>0.15 and visited[i][j+1]==0): 
                 dirn = "right"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==2):
         
@@ -298,7 +302,7 @@ def decideDirection():
             elif(dist_c>0.15 and visited[i][j+1]==0): 
                 dirn = "front"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
         
         elif(orientation==3):
         
@@ -309,7 +313,7 @@ def decideDirection():
             elif(dist_l>0.15 and visited[i+1][j]==0): 
                 dirn = "left"            
             else:
-                backtrack(path,i,j,o)
+                backtrack()
 
     #else:
     #    dirn = "unknown" #// a number different from 0,1,-1 , 17 => just stay there
