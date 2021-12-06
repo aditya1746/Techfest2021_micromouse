@@ -82,7 +82,7 @@ def backtrack():
     global path
     path.pop()
 
-    previ = path[-1]/16, prevj = path[-1]%16
+    previ,prevj = path[-1]/16,path[-1]%16
 
     if(previ == i+1):
 
@@ -414,12 +414,15 @@ def main():
 
     while(True):
 
-        visited[i][j] = 1
+        if(visited[i][j] == 0):
+            path.append(i*16 + j)
 
-        path.append(i*16 + j)
+        visited[i][j] = 1
 
         if((i==7 or i==8) and (j==7 or j==8)):
             break
+
+        decideDirection()
 
 if __name__ == '__main__':
     main()
