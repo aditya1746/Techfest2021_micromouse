@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Point
@@ -9,58 +8,55 @@ import math
 import time
 
 dist_l,dist_r,dist_c = 0,0,0
-x,y,i,j = 0,0,0,0
-orientation = -1
-dirn = ""
+x,y,i,j,orientation,state = 0,0,0,0,-1,0
+dirn = "none"
 visited = [[0 for i in range(16)] for j in range(16)]
 path = []
-position_=Point()
+position_ = Point()
 pub = 0
-state = 0
 
 def forward():
 
     global pub
+
+    print("---------------- inside forward -------------------")
 
     v = Twist()
     v.linear.x, v.linear.y, v.linear.z = 0.16,0,0
     pub.publish(v)
 
 def rotate(velocity_publisher, angular_speed_degree, relative_angle_degree, clockwise):
-    v = Twist()
 
-    angular_speed=math.radians(abs(angular_speed_degree))
+    print("---------------- inside rotate -------------------")
+
+    v = Twist()
+    angular_speed = math.radians(abs(angular_speed_degree))
 
     if (clockwise):
-        v.angular.z =-abs(angular_speed)
+        v.angular.z = -abs(angular_speed)
     else:
-        v.angular.z =abs(angular_speed)
+        v.angular.z = abs(angular_speed)
 
     angle_moved = 0.0
-    #loop_rate = rospy.Rate(10) # we publish the velocity at 10 Hz (10 times a second)    
-    #velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    #loop_rate = rospy.Rate(10) # we publish the velocity at 10 Hz (10 times a second)  
 
     t0 = rospy.Time.now().to_sec()
 
     while True :
-        rospy.loginfo("Turtlesim rotates")
+
+        rospy.loginfo("======== rotating ============")
         velocity_publisher.publish(v)
 
         t1 = rospy.Time.now().to_sec()
         current_angle_degree = (t1-t0)*angular_speed_degree
         #loop_rate.sleep()
         
-        if  (current_angle_degree>relative_angle_degree):
-            rospy.loginfo("reached")
+        if(current_angle_degree > relative_angle_degree):
+            rospy.loginfo("========= reached ===========")
             break
 
-    #finally, stop the robot when the distance is moved
     v.angular.z =0
     velocity_publisher.publish(v)
-
-#def rotateCW():
-    
-#def rotateCCW():
 
 def backward():
 
@@ -161,10 +157,9 @@ def backtrack():
         elif(orientation==1): 
             left()
     
-
 def decideDirection():
 
-    global dirn
+    global dirn,visited,orientation,i,j
 
     print("---------------- inside decideDirection -------------------------")
 
@@ -352,9 +347,6 @@ def decideDirection():
             else:
                 backtrack()
 
-    #else:
-    #    dirn = "unknown" #// a number different from 0,1,-1 , 17 => just stay there
-
 def clbk_laser(msg):
 
     global dist_l, dist_c, dist_r
@@ -369,31 +361,22 @@ def clbk_laser(msg):
         round(100*min(min(msg.ranges[288:359]), 100)),
     ]
 
-    #rospy.loginfo(regions)
     #print("l:  \t c:  \t r: ".format(regions[4], regions[2], regions[0]))
     
     dist_l,dist_c,dist_r = regions[4],regions[2],regions[0]
 
 def clbk_odo(msg):
 
-    global x,y,i,j,state
-    global position_
+    global x,y,i,j,state,position_
 
-    position_=msg.pose.pose.position
-
-    x = position_.x 
-    y = position_.y
-
+    position_ = msg.pose.pose.position
+    x,y = position_.x,position_.y
     state = 1
 
     if(x>0):
-        #print("inside x>0")
         i = int(round(abs(7 + ((x/0.085)+1)/2)))
     else:
-        #print("inside x<0")
-        #print(i)
         i = int(round(abs(7 - ((abs(x)/0.085)-1)/2)))
-        #print(i)
 
     if(y>0):
         j = int(round(abs(7 - ((y/0.085)-1)/2)))
@@ -401,32 +384,21 @@ def clbk_odo(msg):
         j = int(round(abs(7 + ((abs(y)/0.085)+1)/2)))
     
     print( "---------------- inside callback_odom -------------------------")
-    print(x)
-    print(y)
-    print(i)
-    print(j)
+    print("x: ",x," y: ",y," i: ",i," j: ",j)
+    print("---------------------------------------------------------------")
 
 def setOrientation():
     
+    global x,y,i,j,orientation
+
     print("----------------- inside setOrientation -------------------")
+    print("x: ",x," y: ",y)
+    print("---------------------------------------------------------------")
 
-    global x,y,i,j
-    print(x)
-    print(y)
-    #global position_
-
-    #position_=msg1.pose.pose.position
-
-    #x = position_.x, y = position_.y
-
-    global orientation
-
-    if(x>0 and y>0): #//=> 1st quad
+    if(x>0 and y>0):   # 1st quad
 
         forward()
-
         x1,y1 = x,y
-
         backward() 
         rotate(pub,20,180,True)
 
@@ -435,53 +407,45 @@ def setOrientation():
         else:
             orientation = 0
     
-    elif(x<0 and y>0): #// 2nd quad
-        print("hello")
-        
+    elif(x<0 and y>0):   #2nd quad
+
         forward()
-
         x1,y1 = x,y
-
         backward() 
         rotate(pub,20,180,True)
 
         if(x1 == x+1):
-            orientation = 2 #//right facing
+            orientation = 2   #right facing
         else:
             orientation = 0
 
-    elif(x<0 and y<0): #// 3rd quad
+    elif(x<0 and y<0):    # 3rd quad
     
         forward()
-
         x1,y1 = x,y
-
         backward() 
         rotate(pub,20,180,True)
 
         if(x1 == x+1): 
-            orientation = 2 #//right facing
+            orientation = 2    #right facing
         else:
             orientation = 1
     
-    else: #// 4th quad
+    elif(x>0 and y<0):            #4th quad
     
         forward()
-
         x1,y1 = x,y
-
         backward() 
         rotate(pub,20,180,True)
 
         if(x1 == x-1):
-            orientation=3 #//left facing
+            orientation=3       #left facing
         else: 
             orientation = 1
 
 def main():
 
-    global pub
-    global x,y,i,j,state
+    global pub,x,y,i,j,state
 
     rospy.init_node('final_runner', anonymous=True)
     sub_laser = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
@@ -490,7 +454,6 @@ def main():
     rate = rospy.Rate(0.5)
 
     while(state==0):
-        state = state
         rate.sleep()
         print("----------------- inside state==0 -------------------")
 
@@ -628,4 +591,5 @@ def main():
         idx = idx+1
 
 if __name__ == '__main__':
+
     main()
