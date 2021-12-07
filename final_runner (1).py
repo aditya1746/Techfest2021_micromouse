@@ -81,7 +81,7 @@ def rotate(velocity_publisher, angular_speed_degree, relative_angle_degree, cloc
         n=n+1
         velocity_publisher.publish(v)
         rate.sleep()
-        
+
     v.angular.z =0
     velocity_publisher.publish(v)
 
@@ -426,8 +426,8 @@ def setOrientation():
 
         forward()
         x1,y1 = x,y
-        backward() 
-        rotate(pub,90,180,True)
+        #backward() 
+        #rotate(pub,90,180,True)
 
         if(x1 == x-1): 
             orientation=3 #//left facing
@@ -438,8 +438,8 @@ def setOrientation():
 
         forward()
         x1,y1 = x,y
-        backward() 
-        rotate(pub,90,180,True)
+        #backward() 
+        #rotate(pub,90,180,True)
 
         if(x1 == x+1):
             orientation = 2   #right facing
@@ -450,8 +450,8 @@ def setOrientation():
     
         forward()
         x1,y1 = x,y
-        backward() 
-        rotate(pub,90,180,True)
+        #backward() 
+        #rotate(pub,90,180,True)
 
         if(x1 == x+1): 
             orientation = 2    #right facing
@@ -462,8 +462,8 @@ def setOrientation():
     
         forward()
         x1,y1 = x,y
-        backward() 
-        rotate(pub,90,180,True)
+        #backward() 
+        #rotate(pub,90,180,True)
 
         if(x1 == x-1):
             orientation=3       #left facing
@@ -472,7 +472,7 @@ def setOrientation():
 
 def main():
 
-    global pub,x,y,i,j,state
+    global pub,x,y,i,j,state,visited,path
 
     rospy.init_node('final_runner', anonymous=True)
     sub_laser = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
@@ -485,10 +485,14 @@ def main():
         print("----------------- inside state==0 -------------------")
 
     setOrientation()
+
+    visited[i][j] = 1
         
     while not rospy.is_shutdown():
 
         print("----------------- inside not rospy.is_shutdown() -------------------")
+
+        print("i: ",i," j: ",j," orientation: ",orientation)
 
         if(visited[i][j] == 0):
             path.append(i*16 + j)
