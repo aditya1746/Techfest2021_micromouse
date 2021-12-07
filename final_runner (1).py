@@ -23,7 +23,19 @@ def forward():
 
     v = Twist()
     v.linear.x, v.linear.y, v.linear.z = 0.16,0,0
+
+    rate = rospy.Rate(10)
+    n = 0
+
+    while(n<10):
+
+        pub.publish(v)
+        n = n+1
+        rate.sleep()
+
+    v.linear.x = 0
     pub.publish(v)
+
 
 def rotate(velocity_publisher, angular_speed_degree, relative_angle_degree, clockwise):
 
@@ -37,9 +49,9 @@ def rotate(velocity_publisher, angular_speed_degree, relative_angle_degree, cloc
     else:
         v.angular.z = abs(angular_speed)
 
-    angle_moved = 0.0
+    #angle_moved = 0.0
     #loop_rate = rospy.Rate(10) # we publish the velocity at 10 Hz (10 times a second)  
-
+    '''
     t0 = rospy.Time.now().to_sec()
 
     while True :
@@ -51,10 +63,25 @@ def rotate(velocity_publisher, angular_speed_degree, relative_angle_degree, cloc
         current_angle_degree = (t1-t0)*angular_speed_degree
         #loop_rate.sleep()
         
-        if(current_angle_degree > relative_angle_degree):
+        if(current_angle_degree >= relative_angle_degree):
             rospy.loginfo("========= reached ===========")
             break
+    '''
 
+    n = 0
+    rate = rospy.Rate(9)
+
+    limit = 9
+
+    if relative_angle_degree==180:
+        limit=18
+
+    while(n<limit):
+
+        n=n+1
+        velocity_publisher.publish(v)
+        rate.sleep()
+        
     v.angular.z =0
     velocity_publisher.publish(v)
 
@@ -62,7 +89,7 @@ def backward():
 
     global orientation,pub
 
-    rotate(pub,20,180,True)
+    rotate(pub,90,180,True)
     forward()
 
     if(orientation==0):
@@ -78,7 +105,7 @@ def left():
 
     global orientation,pub
 
-    rotate(pub,20,90,False)
+    rotate(pub,90,90,False)
     forward()
 
     if(orientation==0): 
@@ -94,7 +121,7 @@ def right():
 
     global orientation,pub
 
-    rotate(pub,20,90,True)
+    rotate(pub,90,90,True)
     forward()
 
     if(orientation==0): 
@@ -400,7 +427,7 @@ def setOrientation():
         forward()
         x1,y1 = x,y
         backward() 
-        rotate(pub,20,180,True)
+        rotate(pub,90,180,True)
 
         if(x1 == x-1): 
             orientation=3 #//left facing
@@ -412,7 +439,7 @@ def setOrientation():
         forward()
         x1,y1 = x,y
         backward() 
-        rotate(pub,20,180,True)
+        rotate(pub,90,180,True)
 
         if(x1 == x+1):
             orientation = 2   #right facing
@@ -424,7 +451,7 @@ def setOrientation():
         forward()
         x1,y1 = x,y
         backward() 
-        rotate(pub,20,180,True)
+        rotate(pub,90,180,True)
 
         if(x1 == x+1): 
             orientation = 2    #right facing
@@ -436,7 +463,7 @@ def setOrientation():
         forward()
         x1,y1 = x,y
         backward() 
-        rotate(pub,20,180,True)
+        rotate(pub,90,180,True)
 
         if(x1 == x-1):
             orientation=3       #left facing
