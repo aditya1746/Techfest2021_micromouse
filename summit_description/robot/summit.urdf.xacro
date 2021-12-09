@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+
+<robot name="summit_xl" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<!-- Import summit XL wheels -->
+	<xacro:include filename="$(find summit_description)/urdf/wheels/omni_wheel.urdf.xacro" />
+	<xacro:include filename="$(find summit_description)/urdf/base/summit_base.urdf.xacro" />
+
+	<!-- Wheel parameters -->
+	<!--<xacro:property name="wheel_offset_x" value="0.2225" />  -->  <!-- x,y,z in translation from base_link to the center of the wheel -->
+	<!--<xacro:property name="wheel_offset_y" value="0.2045" /> -->
+	<xacro:property name="wheel_offset_x" value="0.0278125" />    <!-- x,y,z in translation from base_link to the center of the wheel -->
+	<xacro:property name="wheel_offset_y" value="0.02545" />
+	<xacro:property name="wheel_offset_z" value="0.0" />
+
+	<xacro:macro name="robot">
+		<xacro:summit_base/>
+
+		<xacro:omni_wheel prefix="summit_front_right" parent="summit_base_link" reflect="false">
+			<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		</xacro:omni_wheel>
+
+		<xacro:omni_wheel prefix="summit_front_left" parent="summit_base_link" reflect="true">
+			<origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		</xacro:omni_wheel>
+
+		<xacro:omni_wheel prefix="summit_back_left" parent="summit_base_link" reflect="true">
+			<origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		</xacro:omni_wheel>
+
+		<xacro:omni_wheel prefix="summit_back_right" parent="summit_base_link" reflect="false">
+			<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+		</xacro:omni_wheel>
+
+		<xacro:omni_steering />
+
+   </xacro:macro>
+
+   <link name="sensor_laser">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/> 
+    </inertial>
+
+    <visual>
+      <origin xyz="0.02 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.005" length="0.02"/>
+      </geometry>
+      <material name="white" />
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint_sensor_laser" type="fixed">
+    <origin rpy="0  0  -1.57" xyz="0    0    0.01"/>
+    <parent link="summit_base_link"/>
+    <child link="sensor_laser"/>
+  </joint>
+
+
+  <gazebo reference="sensor_laser">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>20</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159265</min_angle>
+            <max_angle>3.14159265</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.04</min>
+          <max>10.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/my_mm_robot/laser/scan</topicName>
+        <frameName>sensor_laser</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+   <xacro:robot/>
+
+</robot>
+
