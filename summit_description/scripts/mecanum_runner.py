@@ -15,28 +15,36 @@ dirn = "none"
 visited = [[0 for i in range(16)] for j in range(16)]
 path = []
 pub = 0
-unitDistance = 0.165
+unitDistance = 0.178
 th = 0.15
 n1 = 0
 n2 = 0
 
 def front():
-    print("---------------- inside front -------------------")
+    #print("---------------- inside front -------------------")
 
     global pub,i
 
     v = Twist()
-    v.linear.x = 0.16
+    v.linear.x = unitDistance
     v.linear.y,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
     y1 = y
 
     i = i+1
-
+    '''
     while (y1-y <= unitDistance):
         print("y1: ",y1," y: ",y)
         pub.publish(v)
+        '''
+    t = rospy.get_time()
+
+    while(rospy.get_time()<=t+1.0):
+        pub.publish(v)
+
+    v.linear.x = 0.0
+    pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
     pub.publish(v)
@@ -45,16 +53,20 @@ def back():
 
     global pub,i
 
-    print("---------------- inside back -------------------------")
+    #print("---------------- inside back -------------------------")
 
     v = Twist()
-    v.linear.x = -0.16
+    v.linear.x = -unitDistance
     v.linear.y,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
     y1 = y
-
+    '''
     while (y-y1 <= unitDistance):
+        pub.publish(v)'''
+    t = rospy.get_time()
+
+    while(rospy.get_time()<=t+1.0):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -66,16 +78,20 @@ def left():
 
     global pub,j
 
-    print("---------------- inside left -------------------------")
+    #print("---------------- inside left -------------------------")
 
     v = Twist()
-    v.linear.y = -0.16
+    v.linear.y = -unitDistance
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
     x1 = x
 
-    while (x1-x <= unitDistance):
+    '''while (x1-x <= unitDistance):
+        pub.publish(v)'''
+    t = rospy.get_time()
+
+    while(rospy.get_time()<=t+1.0):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -87,16 +103,21 @@ def right():
 
     global pub,j
 
-    print("---------------- inside right -------------------------")
+    #print("---------------- inside right -------------------------")
 
     v = Twist()
-    v.linear.y = 0.16
+    v.linear.y = unitDistance
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
     x1 = x
-
+    '''
     while (x-x1 <= unitDistance):
+        pub.publish(v)'''
+    
+    t = rospy.get_time()
+
+    while(rospy.get_time()<=t+1.0):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -112,12 +133,16 @@ def backtrack():
     previ,prevj = path[-1]/16,path[-1]%16
 
     if(previ == i+1):
+        print("from backtrack going front")
         front()
     elif(previ == i-1):
+        print("from backtrack going back")
         back()
     elif(prevj == j+1):
+        print("from backtrack going right")
         right()
     elif(prevj == j-1):
+        print("from backtrack going left")
         left()
     
 def decideDirection():
@@ -138,6 +163,7 @@ def decideDirection():
             dirn = "left"
         else:
             backtrack()
+            dirn = "none"
         
     elif(j>=8 and i<=7): #// priority left-down-top-right  // 1st quadrant
 
@@ -151,6 +177,7 @@ def decideDirection():
             dirn = "right"
         else:
             backtrack()
+            dirn = "none"
         
     elif(j<=7 and i>=8): #// priority right-top-down-left  // 3rd quadrant
     
@@ -164,6 +191,7 @@ def decideDirection():
             dirn = "left"
         else:
             backtrack()
+            dirn = "none"
 
     elif(j>=8 and i>=8): #// priority left-top-down-right  // 4th quadrant 
     
@@ -177,6 +205,7 @@ def decideDirection():
             dirn = "right"
         else:
             backtrack()
+            dirn = "none"
 
 def clbk_laser(msg):
 
@@ -192,7 +221,7 @@ def clbk_laser(msg):
 
 def clbk_odo(msg):
 
-    global x,y,i,j,state,n2
+    global x,y,i,j,state,n1
 
     position_ = msg.pose.pose.position
     x,y = position_.x,position_.y
@@ -200,9 +229,9 @@ def clbk_odo(msg):
     #print( " ============== inside odom  ===============")
     #print("x: ",x," y: ",y)
 
-    if(n2==0):
+    if(n1==0):
         state = state+1
-        n2 = 1
+        n1 = 1
 
 def callback(msg):
 
@@ -261,16 +290,18 @@ def main():
 
         if(visited[i][j] == 0):
             path.append(i*16 + j)
+            #print(path)
 
         visited[i][j] = 1
+
+        print("I am at: ",i, " ", j)
 
         if((i==7 or i==8) and (j==7 or j==8)):
             break
 
         decideDirection()
 
-        print("i: ",i," j: ",j," dirn: ",dirn)
-        print("dist_l: ",dist_l,"dist_f: ",dist_f,"dist_r: ",dist_r," dist_b: ",dist_b)
+        print("i am going ", dirn)
 
         if(dirn=="left"):
             left()
@@ -281,7 +312,9 @@ def main():
         elif(dirn=="back"):
             back()
 
-        rate.sleep()
+        #prin(" ")
+
+        #rate.sleep()
     
     idx = len(path and visited[i][j]==0)-1
 
