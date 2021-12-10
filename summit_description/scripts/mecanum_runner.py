@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+
 import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Point
@@ -16,16 +17,38 @@ path = []
 pub = 0
 unitDistance = 0.165
 th = 0.15
-n = 0
+n1 = 0
 n2 = 0
 
 def front():
-    #print("---------------- inside forward -------------------")
+    print("---------------- inside front -------------------")
 
     global pub,i
 
     v = Twist()
-    v.linear.x = 0.17
+    v.linear.x = 0.16
+    v.linear.y,v.linear.z  = 0.0,0.0
+    v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
+
+    y1 = y
+
+    i = i+1
+
+    while (y1-y <= unitDistance):
+        print("y1: ",y1," y: ",y)
+        pub.publish(v)
+
+    v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
+    pub.publish(v)
+
+def back():
+
+    global pub,i
+
+    print("---------------- inside back -------------------------")
+
+    v = Twist()
+    v.linear.x = -0.16
     v.linear.y,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
@@ -37,33 +60,16 @@ def front():
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
     pub.publish(v)
 
-    i = i+1
-
-def back():
-
-    global pub,i
-
-    v = Twist()
-    v.linear.x = -0.17
-    v.linear.y,v.linear.z  = 0.0,0.0
-    v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
-
-    y1 = y
-
-    while (y1-y <= unitDistance):
-        pub.publish(v)
-
-    v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
-    pub.publish(v)
-
     i = i-1
 
 def left():
 
     global pub,j
 
+    print("---------------- inside left -------------------------")
+
     v = Twist()
-    v.linear.y = -0.17
+    v.linear.y = -0.16
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
@@ -81,8 +87,10 @@ def right():
 
     global pub,j
 
+    print("---------------- inside right -------------------------")
+
     v = Twist()
-    v.linear.y = 0.17
+    v.linear.y = 0.16
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
@@ -116,73 +124,71 @@ def decideDirection():
 
     global dirn,visited,orientation,i,j
 
-    #print("---------------- inside decideDirection -------------------------")
+    print("---------------- inside decideDirection -------------------------")
 
     if(j<=7 and i<=7): # priority right-down-top-left  // 2nd quadrant
 
         if(dist_r>=th and visited[i][j+1]==0):
-            right()
+            dirn = "right"
         elif(dist_f>=th and visited[i+1][j]==0):
-            front()
+            dirn = "front"
         elif(dist_b>=th and visited[i-1][j]==0):
-            back()
+            dirn = "back"
         elif(dist_l>=th and visited[i][j-1]==0):
-            left()
+            dirn = "left"
         else:
             backtrack()
         
     elif(j>=8 and i<=7): #// priority left-down-top-right  // 1st quadrant
 
         if(dist_l>=th and visited[i][j-1]==0):
-            left()
+            dirn = "left"
         elif(dist_f>=th and visited[i+1][j]==0):
-            front()
+            dirn = "front"
         elif(dist_b>=th and visited[i-1][j]==0):
-            back()
+            dirn = "back"
         elif(dist_r>=th and visited[i][j+1]==0):
-            right()
+            dirn = "right"
         else:
             backtrack()
         
     elif(j<=7 and i>=8): #// priority right-top-down-left  // 3rd quadrant
     
         if(dist_r>=th and visited[i][j+1]==0):
-            right()
+            dirn = "right"
         elif(dist_b>=th and visited[i-1][j]==0):
-            back()
+            dirn = "back"
         elif(dist_f>=th and visited[i+1][j]==0):
-            front()
+            dirn = "front"
         elif(dist_l>=th and visited[i][j-1]==0):
-            left()
+            dirn = "left"
         else:
             backtrack()
 
     elif(j>=8 and i>=8): #// priority left-top-down-right  // 4th quadrant 
     
         if(dist_l>=th and visited[i][j-1]==0):
-            left()
+            dirn = "left"
         elif(dist_b>=th and visited[i-1][j]==0):
-            back()
+            dirn = "back"
         elif(dist_f>=th and visited[i+1][j]==0):
-            front()
+            dirn = "front"
         elif(dist_r>=th and visited[i][j+1]==0):
-            right()
+            dirn = "right"
         else:
             backtrack()
 
 def clbk_laser(msg):
 
-    global dist_l, dist_f, dist_r, dist_b,n,state
+    global dist_l, dist_f, dist_r, dist_b,n2,state
 
     #print( "---------------- inside callback_laser -------------------------")
 
-    dist_b,dist_l,dist_f,dist_r = msg.ranges[0],msg.ranges[90],msg.ranges[180],msg.ranges[270]
+    dist_l,dist_b,dist_f,dist_r = msg.ranges[180],msg.ranges[90],msg.ranges[270],msg.ranges[0]
 
-    if(n==0):
-        print(msg.ranges)
-        print(msg.ranges[0],msg.ranges[90],msg.ranges[180],msg.ranges[270])
-        n = 1
+    if(n2==0):
         state = state+1
+        n2 = 1
 
 def clbk_odo(msg):
 
@@ -200,11 +206,15 @@ def clbk_odo(msg):
 
 def callback(msg):
 
-    global x,y
+    global x,y,n1,state
     x = msg.x
     y = msg.y
 
-    print("====== received =========")
+    if(n1==0):
+        state = state+1
+        n1 = 1
+
+    #print("====== received =========")
 
 def findij():
 
@@ -235,15 +245,15 @@ def main():
     v = Twist()
     v.linear.x,v.linear.y,v.linear.z,v.angular.x,v.angular.y,v.angular.z = 0.0,0.0,0.0,0.0,0.0,0.0
 
-    while(state!=1):
+    while(state!=2):
         state = state
-        #print(" ============ inside state =========== ")
+        print("============ waiting =====================")
 
     print("========== started ======")
 
     findij()
 
-    print("i: ",i," j: ",j," dist_l: ",dist_l," dist_f: ",dist_f," dist_r: ",dist_r," dist_b: ",dist_b)
+    #print("i: ",i," j: ",j," dist_l: ",dist_l," dist_f: ",dist_f," dist_r: ",dist_r," dist_b: ",dist_b)
         
     while not rospy.is_shutdown():
 
