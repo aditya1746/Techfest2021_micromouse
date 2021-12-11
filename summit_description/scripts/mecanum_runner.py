@@ -15,7 +15,12 @@ dirn = "none"
 visited = [[0 for i in range(16)] for j in range(16)]
 path = []
 pub = 0
-unitDistance = 0.178
+unitDistancex = 0.1799
+unitDistancey = 0.17912
+fac = 1
+unitDistancex = unitDistancex*fac
+unitDistancey = unitDistancey*fac
+tfac = 1.0/fac
 th = 0.15
 n1 = 0
 n2 = 0
@@ -26,25 +31,15 @@ def front():
     global pub,i
 
     v = Twist()
-    v.linear.x = unitDistance
+    v.linear.x = unitDistancex
     v.linear.y,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
-    y1 = y
-
     i = i+1
-    '''
-    while (y1-y <= unitDistance):
-        print("y1: ",y1," y: ",y)
-        pub.publish(v)
-        '''
     t = rospy.get_time()
 
-    while(rospy.get_time()<=t+1.0):
+    while(rospy.get_time()<=t+tfac):
         pub.publish(v)
-
-    v.linear.x = 0.0
-    pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
     pub.publish(v)
@@ -56,17 +51,13 @@ def back():
     #print("---------------- inside back -------------------------")
 
     v = Twist()
-    v.linear.x = -unitDistance
+    v.linear.x = -unitDistancex
     v.linear.y,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
-    y1 = y
-    '''
-    while (y-y1 <= unitDistance):
-        pub.publish(v)'''
     t = rospy.get_time()
 
-    while(rospy.get_time()<=t+1.0):
+    while(rospy.get_time()<=t+tfac):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -81,17 +72,13 @@ def left():
     #print("---------------- inside left -------------------------")
 
     v = Twist()
-    v.linear.y = -unitDistance
+    v.linear.y = -unitDistancey
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
 
-    x1 = x
-
-    '''while (x1-x <= unitDistance):
-        pub.publish(v)'''
     t = rospy.get_time()
 
-    while(rospy.get_time()<=t+1.0):
+    while(rospy.get_time()<=t+tfac):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -106,18 +93,13 @@ def right():
     #print("---------------- inside right -------------------------")
 
     v = Twist()
-    v.linear.y = unitDistance
+    v.linear.y = unitDistancey
     v.linear.x,v.linear.z  = 0.0,0.0
     v.angular.z,v.angular.x,v.angular.y = 0.0,0.0,0.0
-
-    x1 = x
-    '''
-    while (x-x1 <= unitDistance):
-        pub.publish(v)'''
     
     t = rospy.get_time()
 
-    while(rospy.get_time()<=t+1.0):
+    while(rospy.get_time()<=t+tfac):
         pub.publish(v)
 
     v.linear.y,v.linear.x,v.linear.z = 0.0,0.0,0.0
@@ -266,8 +248,8 @@ def main():
 
     rospy.init_node('final_runner', anonymous=True)
     sub_laser = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    #sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odo)
-    sub = rospy.Subscriber('/my_topic',Point,callback)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odo)
+    #sub = rospy.Subscriber('/my_topic',Point,callback)
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     rate = rospy.Rate(0.5)
 
@@ -316,7 +298,7 @@ def main():
 
         #rate.sleep()
     
-    idx = len(path and visited[i][j]==0)-1
+    idx = len(path)-1
 
     print("--------------- going back to start by using shortest path and visited[i][j]==0 ------------------")
 
@@ -339,7 +321,7 @@ def main():
 
     print("--------------- going back to end by using shortest path and visited[i][j]==0 ------------------")
 
-    while(idx<len(path and visited[i][j]==0)):
+    while(idx<len(path)):
 
         previ,prevj = path[idx]/16, path[idx]%16
 
